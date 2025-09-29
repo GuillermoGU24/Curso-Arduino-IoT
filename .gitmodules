@@ -1,7 +1,0 @@
-[submodule "ComederoApp"]
-    path = "4.Proyectos-IoT/4.3-Comedero-Mascotas"
-    url = https://github.com/GuillermoGU24/ComederoApp.git
-
-[submodule "ProyectoControlAceso"]
-    path = "4.Proyectos IoT/4.2-Asistencia-PIN"
-    url = https://github.com/GuillermoGU24/ProyectoControlAceso.git
