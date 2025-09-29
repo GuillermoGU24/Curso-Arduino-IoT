@@ -1,0 +1,74 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Wire.h>
+
+// === WiFi ===
+const char* ssid = "GP24"; // Nombre de tu Red Wifi
+const char* password = "123456789"; /// Contraseña de tu Wifi
+const char* serverUrl = "https://plantasiot-production.up.railway.app/api/resgistrarRiego";
+
+const int agua = D1;
+
+const int sensorPin = A0;
+int valorSensor = 0;
+const int id = 1;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  
+  pinMode(agua,OUTPUT);
+  digitalWrite(agua,HIGH);  
+
+  // WiFi
+  WiFi.disconnect();
+  delay(100);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nConectado al WiFi");
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  valorSensor = analogRead(sensorPin);
+  Serial.println(valorSensor);
+
+  bool bombear = valorSensor < 750;
+
+  if(bombear){
+    digitalWrite(agua,LOW);  
+    registrarRiego();
+  }
+  else {
+    digitalWrite(agua,HIGH);
+  }
+
+}
+
+void registrarRiego(){
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+
+  String jsonPayload = "{\"idPlanta\":\"" + String(id) + "\", \"humedad\":\"" + String(valorSensor) + "\"}";
+
+    int httpResponseCode = http.POST(jsonPayload);
+
+
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      Serial.println("Respuesta del servidor:");
+      Serial.println(response);
+    } else {
+      Serial.printf("Error HTTP: %s\n", http.errorToString(httpResponseCode).c_str());
+    }
+
+    http.end();
+  } else {
+    Serial.println("Error: WiFi no conectado");
+  }
+}
